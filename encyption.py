@@ -1,6 +1,5 @@
 import string 
 import random
-from socket import *
 
 class Encyption:
 
