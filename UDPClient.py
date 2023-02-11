@@ -7,9 +7,10 @@ serverPort = 12000
 #socket type----> SOCK_DGRAM
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
-message = input("enter a unique username:")
+user = input("enter a unique username:")
+password = input("enter password:")
 
-send = message
+send = user+"##"+password
 
 
 clientSocket.sendto(send.encode(),(serverName, serverPort))

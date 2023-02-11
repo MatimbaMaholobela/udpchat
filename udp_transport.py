@@ -9,15 +9,14 @@ class Server:
 
     serverSocket.bind(("", serverPort)) #binds the socket with the port number
 
-
-
-    def register():
+    def register(password):
 
         username, address = serverSocket.recvfrom(2048)
-        username = username.decode()
+        username = username.decode().split("##")
+
         host = address[0]
         portNum = address[1]
-        user =  username+"#"+host+"#"+str(portNum)
+        user =  username[0]+"#"+host+"#"+str(portNum)+"#"+username[1]
 
         if (Server.checkUser(username,host)==False):
 
@@ -43,6 +42,14 @@ class Server:
         for i in f:
             user = i.split("#")
             if ((username==user[0]) and (host==user[1])):
+                return True
+        return False
+    def login(username,password):
+
+        f = open("users/users.txt")
+        for i in f:
+            user = i.split("#")
+            if(username==user[0]) and password==user[-1]:
                 return True
         return False
     
