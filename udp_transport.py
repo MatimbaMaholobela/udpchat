@@ -1,55 +1,85 @@
 from socket import *
-
+from encyption import *
 class Server:
-    global serverPort
-    serverPort = 12000
 
     global serverSocket
-    serverSocket = socket(AF_INET, SOCK_DGRAM) #creates a server socket
+    global serverPort
 
-    serverSocket.bind(("", serverPort)) #binds the socket with the port number
+    def main():
+        serverPort = 12000    
+        serverSocket = socket(AF_INET, SOCK_DGRAM) #creates a server socket
+        serverSocket.bind(("", serverPort)) #binds the socket with the port number
+        print("The server is ready to receive")
 
-    def register(password):
+        
+        while True:
 
-        username, address = serverSocket.recvfrom(2048)
-        username = username.decode().split("##")
+            incomingMsg,address = serverSocket.recvfrom(2048)
+            host = address[0]
+            portNum = address[1]
 
-        host = address[0]
-        portNum = address[1]
-        user =  username[0]+"#"+host+"#"+str(portNum)+"#"+username[1]
+            #message = {action,username,password}
+            message = incomingMsg.decode().split("##")
+            #print(message)
+            if message[0]=="1":
+                status =(Server.register(host,portNum,message[1],message[2]))
+
+                serverSocket.sendto(status.encode(),(host,portNum))
+                
+            elif message[0]=="2":
+                status =(Server.login(message[1],message[2]))
+                serverSocket.sendto(status.encode(),(host,portNum))
+
+    if __name__ == "__main__":
+        main()
+
+    def register(host,portNum,username,password):
+
+        user =  username+"#"+host+"#"+str(portNum)+"#"+password
 
         if (Server.checkUser(username,host)==False):
 
             try:
-                f= open("users/users.txt","a")
-                f.write(user)
-                f.write("\n")
+                f= open("users/users.txt","a+")
+                f.writelines(user)
                 f.close()
 
             except (FileNotFoundError):
-                f = open("users/users.txt", "w")
-                f.write(user)
-                f.write("\n")
+                f = open("users/users.txt", "w+")
+                f.writelines(user)
                 f.close()
-            return "New user created"
+            return "register successful"
         else:
-            return "User already exists"
+            return "register unsuccessul"
 
     def checkUser(username,host):
 
-        f = open("users/users.txt")
-        
-        for i in f:
-            user = i.split("#")
-            if ((username==user[0]) and (host==user[1])):
-                return True
-        return False
-    def login(username,password):
+        try:
 
-        f = open("users/users.txt")
-        for i in f:
-            user = i.split("#")
-            if(username==user[0]) and password==user[-1]:
-                return True
-        return False
-    
+            f = open("users/users.txt")
+            
+            for i in f:
+                user = i.split("#")
+                if ((username==user[0]) and (host==user[1])):
+                    return True
+            return False
+        except FileNotFoundError:
+            return False
+        
+    def login(username,password):
+        try:
+
+            f = open("users/users.txt")
+
+            for i in f:
+            
+                #reads the data stored in the text file
+                user = i.split("#")
+                print(user)
+
+                if((username==user[0]) and (password==(user[3]).strip())):
+                   return "login successful"
+            return "login unsuccessful"
+        except FileNotFoundError:
+            return "login unsuccessful"
+Server.main()
